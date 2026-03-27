@@ -1,14 +1,15 @@
+require("dotenv").config();
+
 module.exports = {
-  // Your Discord account token (keep this secret!)
-  token: process.env.DISCORD_TOKEN || "YOUR_TOKEN_HERE",
+  // Set DISCORD_TOKEN as an environment variable (in .env locally, or in Coolify dashboard)
+  token: process.env.DISCORD_TOKEN || "",
 
-  // User IDs allowed to use commands — add your own Discord user ID here
-  allowedUsers: [
-    "YOUR_USER_ID_HERE",
-    // Add more IDs as needed:
-    // "ANOTHER_USER_ID",
-  ],
+  // Set ALLOWED_USERS as a comma-separated list of Discord user IDs in your env
+  // Example: ALLOWED_USERS=123456789012345678,987654321098765432
+  allowedUsers: process.env.ALLOWED_USERS
+    ? process.env.ALLOWED_USERS.split(",").map((id) => id.trim()).filter(Boolean)
+    : [],
 
-  // Max messages snipe stores (snipe = 5 latest, snipe all = up to this number)
+  // Max deleted/edited messages stored per channel (snipe = 5, snipe all = this number)
   snipeMax: 10,
 };

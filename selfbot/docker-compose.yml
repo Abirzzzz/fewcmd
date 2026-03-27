@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  selfbot:
+    build: .
+    restart: unless-stopped
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - ALLOWED_USERS=${ALLOWED_USERS}
