@@ -74,11 +74,6 @@ client.on("messageCreate", async (message) => {
 
     if (times < 1 || times > 200) return;
 
-    // Delete the trigger message first
-    try {
-      await message.delete();
-    } catch (_) {}
-
     for (let i = 0; i < times; i++) {
       try {
         await message.channel.send(spamText);
@@ -101,11 +96,6 @@ client.on("messageCreate", async (message) => {
       // Silently do nothing — no messages to snipe
       return;
     }
-
-    // Delete the trigger message
-    try {
-      await message.delete();
-    } catch (_) {}
 
     const lines = toShow.map((entry) => {
       if (entry.type === "deleted") {
