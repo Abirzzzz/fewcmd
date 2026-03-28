@@ -1,18 +1,26 @@
+require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 const { Client } = require("discord.js-selfbot-v13");
 const config = require("./config");
+
+if (!config.token) {
+  console.error("ERROR: DISCORD_TOKEN is not set. Create a .env file with DISCORD_TOKEN=your_token");
+  process.exit(1);
+}
 
 const client = new Client({ checkUpdate: false });
 
 // Snipe store: { channelId: [ ...entries ] }
-// Each entry: { type: "deleted"|"edited", authorTag, authorDisplayName, content, oldContent, timestamp }
 const snipeStore = new Map();
+
+// Active spam flags: channelId -> true/false
+const activeSpam = new Map();
 
 function addSnipe(channelId, entry) {
   if (!snipeStore.has(channelId)) {
     snipeStore.set(channelId, []);
   }
   const arr = snipeStore.get(channelId);
-  arr.unshift(entry); // newest first
+  arr.unshift(entry);
   if (arr.length > config.snipeMax) {
     arr.splice(config.snipeMax);
   }
@@ -21,6 +29,10 @@ function addSnipe(channelId, entry) {
 function getDisplayName(member, user) {
   if (member && member.displayName) return member.displayName;
   return user.username;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Track deleted messages
@@ -58,44 +70,100 @@ client.on("messageUpdate", (oldMessage, newMessage) => {
   });
 });
 
+// Stop spam when you react to any message
+client.on("messageReactionAdd", (reaction, user) => {
+  if (!client.user) return;
+  if (user.id !== client.user.id) return;
+  const channelId = reaction.message.channel.id;
+  if (activeSpam.get(channelId)) {
+    activeSpam.set(channelId, false);
+  }
+});
+
 client.on("messageCreate", async (message) => {
-  // Only respond to allowed users
   if (!config.allowedUsers.includes(message.author.id)) return;
 
-  const content = message.content;
+  const content = message.content.trim();
 
   // ── SPAM COMMAND ──────────────────────────────────────────────────────────
   // Format: <message> spam <times>
-  // e.g. "hello world spam 5"
   const spamMatch = content.match(/^(.+?)\s+spam\s+(\d+)$/i);
   if (spamMatch) {
     const spamText = spamMatch[1].trim();
-    const times = parseInt(spamMatch[2], 10);
+    const times = Math.min(parseInt(spamMatch[2], 10), 200);
 
-    if (times < 1 || times > 200) return;
+    if (times < 1) return;
+
+    const channelId = message.channel.id;
+    activeSpam.set(channelId, true);
 
     for (let i = 0; i < times; i++) {
+      if (!activeSpam.get(channelId)) break;
       try {
         await message.channel.send(spamText);
       } catch (_) {}
+      await sleep(300);
     }
+
+    activeSpam.set(channelId, false);
+    return;
+  }
+
+  // ── DELETE COMMAND ────────────────────────────────────────────────────────
+  // "delete <n>" — delete last n of your messages in this channel
+  // "delete all" — delete all of your messages in this channel
+  const deleteMatch = content.match(/^delete\s+(\d+|all)$/i);
+  if (deleteMatch) {
+    const arg = deleteMatch[1].toLowerCase();
+    const deleteAll = arg === "all";
+    const limit = deleteAll ? Infinity : parseInt(arg, 10);
+
+    if (!deleteAll && limit < 1) return;
+
+    let deleted = 0;
+    let keepGoing = true;
+
+    while (keepGoing) {
+      let fetched;
+      try {
+        fetched = await message.channel.messages.fetch({ limit: 100 });
+      } catch (_) {
+        break;
+      }
+
+      if (!fetched || fetched.size === 0) break;
+
+      const mine = fetched.filter((m) => m.author.id === client.user.id);
+
+      if (mine.size === 0) break;
+
+      for (const [, msg] of mine) {
+        if (!deleteAll && deleted >= limit) {
+          keepGoing = false;
+          break;
+        }
+        try {
+          await msg.delete();
+          deleted++;
+        } catch (_) {}
+        await sleep(500);
+      }
+
+      if (!deleteAll) keepGoing = false;
+    }
+
     return;
   }
 
   // ── SNIPE COMMAND ─────────────────────────────────────────────────────────
-  // "snipe" = show last 5
-  // "snipe all" = show last 10
-  if (/^snipe(\s+all)?$/i.test(content.trim())) {
-    const showAll = /snipe\s+all/i.test(content.trim());
+  if (/^snipe(\s+all)?$/i.test(content)) {
+    const showAll = /snipe\s+all/i.test(content);
     const limit = showAll ? config.snipeMax : 5;
 
     const entries = snipeStore.get(message.channel.id) || [];
     const toShow = entries.slice(0, limit);
 
-    if (toShow.length === 0) {
-      // Silently do nothing — no messages to snipe
-      return;
-    }
+    if (toShow.length === 0) return;
 
     const lines = toShow.map((entry) => {
       if (entry.type === "deleted") {
