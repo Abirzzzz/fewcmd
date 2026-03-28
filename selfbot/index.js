@@ -3,6 +3,7 @@ const https = require("https");
 const { Client } = require("discord.js-selfbot-v13");
 const config = require("./config");
 const store = require("./store");
+const { fuzzyMatchGif } = require("./matcher");
 
 if (!config.token) {
   console.error("ERROR: DISCORD_TOKEN is not set. Add it to selfbot/.env");
@@ -262,15 +263,28 @@ client.on("messageCreate", async (message) => {
   }
 
   // ── POST ────────────────────────────────────────────────────────────────
-  // post <id or name>
-  const postMatch = content.match(/^post\s+(\S+)$/i);
+  // post <id or name> — exact match first, then AI fuzzy match
+  const postMatch = content.match(/^post\s+(.+)$/i);
   if (postMatch) {
-    const query = postMatch[1];
-    const gif = store.getGifByIdOrName(userId, query);
+    const query = postMatch[1].trim();
+
+    // 1. Try exact match by ID or name
+    let gif = store.getGifByIdOrName(userId, query);
+
+    // 2. No exact match — ask AI to figure it out
     if (!gif) {
-      try { await message.channel.send(`no gif found for \`${query}\``); } catch (_) {}
+      const userGifs = store.getUserGifs(userId);
+      const matchedId = await fuzzyMatchGif(query, userGifs);
+      if (matchedId) {
+        gif = store.getGifByIdOrName(userId, matchedId);
+      }
+    }
+
+    if (!gif) {
+      try { await message.channel.send("the actual fuck you mean"); } catch (_) {}
       return;
     }
+
     try { await message.delete(); } catch (_) {}
     try { await message.channel.send(gif.url); } catch (_) {}
     return;
