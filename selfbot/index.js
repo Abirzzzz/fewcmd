@@ -271,13 +271,10 @@ client.on("messageCreate", async (message) => {
     // 1. Try exact match by ID or name
     let gif = store.getGifByIdOrName(userId, query);
 
-    // 2. No exact match — ask AI to figure it out
+    // 2. No exact match — fuzzy (typo) then AI match
     if (!gif) {
       const userGifs = store.getUserGifs(userId);
-      const matchedId = await fuzzyMatchGif(query, userGifs);
-      if (matchedId) {
-        gif = store.getGifByIdOrName(userId, matchedId);
-      }
+      gif = await fuzzyMatchGif(query, userGifs);
     }
 
     if (!gif) {
