@@ -5,6 +5,8 @@ module.exports = {
 
   giphyApiKey: process.env.GIPHY_API_KEY || "Tjp9Nf8nX0l7gYePjX5XT03nyQ2pEDFC",
 
+  openrouterApiKey: process.env.OPENROUTER_API_KEY || "",
+
   allowedUsers: [
     "1074719422931030117",
   ],

@@ -1,5 +1,6 @@
 const https = require("https");
 const http = require("http");
+const config = require("./config");
 
 function getOpenRouterConfig() {
   // Replit AI Integrations proxy — no personal API key needed
@@ -8,10 +9,9 @@ function getOpenRouterConfig() {
   if (replitBase && replitKey) {
     return { baseUrl: replitBase.replace(/\/$/, ""), apiKey: replitKey };
   }
-  // Termux / anywhere else — personal OpenRouter API key
-  const personalKey = process.env.OPENROUTER_API_KEY;
-  if (personalKey) {
-    return { baseUrl: "https://openrouter.ai/api/v1", apiKey: personalKey };
+  // Termux / anywhere else — personal OpenRouter API key from config
+  if (config.openrouterApiKey) {
+    return { baseUrl: "https://openrouter.ai/api/v1", apiKey: config.openrouterApiKey };
   }
   return null;
 }
