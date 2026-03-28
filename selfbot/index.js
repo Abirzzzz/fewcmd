@@ -185,11 +185,11 @@ client.on("messageCreate", async (message) => {
     const page = giphyMatch[2] ? parseInt(giphyMatch[2], 10) : 1;
     const result = await giphySearch(query, page);
     if (result.error === "no_key") {
-      try { await message.channel.send("⚠ GIPHY_API_KEY is not set in .env"); } catch (_) {}
+      try { await message.channel.send("no api giphy key"); } catch (_) {}
       return;
     }
     if (result.error || result.gifs.length === 0) {
-      try { await message.channel.send(`no results for **${query}**`); } catch (_) {}
+      try { await message.channel.send(`no results for **${query}** you nigger`); } catch (_) {}
       return;
     }
     const header = `**giphy: "${query}"** — page ${result.page}/${result.totalPages} (${result.total} results)`;
@@ -206,7 +206,7 @@ client.on("messageCreate", async (message) => {
     const url = ggifAddMatch[1];
     const result = store.addGif(userId, url);
     if (result.error === "max") {
-      try { await message.channel.send(`you've hit the ${store.MAX_GIFS} gif limit`); } catch (_) {}
+      try { await message.channel.send(`yoive hit the ${store.MAX_GIFS} gif limit greedy asshole`); } catch (_) {}
       return;
     }
     try { await message.channel.send(`saved — id: \`${result.id}\``); } catch (_) {}
@@ -219,7 +219,7 @@ client.on("messageCreate", async (message) => {
     const id = ggifRemoveMatch[1];
     const removed = store.removeGif(userId, id);
     if (!removed) {
-      try { await message.channel.send(`no gif with id \`${id}\``); } catch (_) {}
+      try { await message.channel.send(`no gif with this id niga \`${id}\``); } catch (_) {}
       return;
     }
     try { await message.channel.send(`removed \`${id}\``); } catch (_) {}
@@ -233,11 +233,11 @@ client.on("messageCreate", async (message) => {
     const name = ggifNameMatch[2].trim();
     const result = store.nameGif(userId, id, name);
     if (result.error === "not_found") {
-      try { await message.channel.send(`no gif with id \`${id}\``); } catch (_) {}
+      try { await message.channel.send(`no gif with ts id \`${id}\``); } catch (_) {}
       return;
     }
     if (result.error === "name_taken") {
-      try { await message.channel.send(`you already have a gif named **${name}**`); } catch (_) {}
+      try { await message.channel.send(`you already HAVE a gif named **${name}** dumb figga`); } catch (_) {}
       return;
     }
     try { await message.channel.send(`named \`${id}\` → **${name}**`); } catch (_) {}
@@ -250,14 +250,14 @@ client.on("messageCreate", async (message) => {
     const page = ggifListMatch[1] ? parseInt(ggifListMatch[1], 10) : 1;
     const result = store.getGifPage(userId, page);
     if (result.total === 0) {
-      try { await message.channel.send("you have no saved gifs — use `ggif add <url>`"); } catch (_) {}
+      try { await message.channel.send("you have no saved gifs brochacho💔🫩🤞"); } catch (_) {}
       return;
     }
     const lines = result.gifs.map((g) => {
       const label = g.name ? `**${g.name}**` : "unnamed";
       return `\`${g.id}\` ${label} — ${g.url}`;
     });
-    const header = `**your gifs** — page ${result.page}/${result.totalPages} (${result.total} total)`;
+    const header = `**your gifs**  page ${result.page}/${result.totalPages} (${result.total} total)`;
     try { await message.channel.send(`${header}\n${lines.join("\n")}`); } catch (_) {}
     return;
   }
