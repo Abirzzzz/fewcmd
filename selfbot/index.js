@@ -154,6 +154,17 @@ client.on("messageCreate", async (message) => {
   const userId = message.author.id;
   const channelId = message.channel.id;
 
+  // ── PING ────────────────────────────────────────────────────────────────
+  if (/^ping$/i.test(content)) {
+    const start = Date.now();
+    const sent = await send(message.channel, "pinging...");
+    if (sent) {
+      const ms = Date.now() - start;
+      try { await sent.edit(`pong. **${ms}ms**`); } catch (_) {}
+    }
+    return;
+  }
+
   // ── JARVIS TRIGGER ───────────────────────────────────────────────────────
   if (/^jarvis$/i.test(content)) {
     jarvis.clearPending(channelId);
@@ -176,14 +187,14 @@ client.on("messageCreate", async (message) => {
     if (/^start$/i.test(content)) {
       try { await message.delete(); } catch (_) {}
       jarvis.activate(channelId);
-      await send(message.channel, "online. what do you need.");
+      await send(message.channel, "on");
       return;
     }
 
     if (/^stop$/i.test(content)) {
       try { await message.delete(); } catch (_) {}
       jarvis.deactivate(channelId);
-      await send(message.channel, "going dark.");
+      await send(message.channel, "off");
       return;
     }
 
@@ -203,7 +214,7 @@ client.on("messageCreate", async (message) => {
     }
 
     try { await message.delete(); } catch (_) {}
-    await send(message.channel, "aborted.");
+    await send(message.channel, "aborted nga");
     return;
   }
 
@@ -212,23 +223,12 @@ client.on("messageCreate", async (message) => {
     if (/^stop$/i.test(content)) {
       try { await message.delete(); } catch (_) {}
       jarvis.deactivate(channelId);
-      await send(message.channel, "going dark.");
+      await send(message.channel, "off");
       return;
     }
 
     const reply = await jarvis.askJarvis(content);
     await send(message.channel, reply);
-    return;
-  }
-
-  // ── PING ────────────────────────────────────────────────────────────────
-  if (/^ping$/i.test(content)) {
-    const start = Date.now();
-    const sent = await send(message.channel, "pinging...");
-    if (sent) {
-      const ms = Date.now() - start;
-      try { await sent.edit(`pong. **${ms}ms**`); } catch (_) {}
-    }
     return;
   }
 

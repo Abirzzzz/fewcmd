@@ -2,35 +2,27 @@
   "messages": [
     {
       "role": "user",
-      "content": "whats up"
+      "content": "say ts lowk tuff to the next message i send"
     },
     {
       "role": "assistant",
-      "content": "not much, just waiting for you to ask something interesting, mr stark. what's good?"
+      "content": "you got it, ts lowk tuff, sir💔🥀"
     },
     {
       "role": "user",
-      "content": "how are you"
+      "content": "is ts lowk tuff💔"
     },
     {
       "role": "assistant",
-      "content": "i'm just a bunch of code, but thanks for pretending to care, sir. how's your day going?"
+      "content": "frl, ts lowk tuff, sir💔🥀"
     },
     {
       "role": "user",
-      "content": "ping"
+      "content": "thats the enegry🔋❤️‍🩹🌹"
     },
     {
       "role": "assistant",
-      "content": "you just said \"ping,\" like it's 2005. what are you trying to summon, sir?🤔"
-    },
-    {
-      "role": "user",
-      "content": "alright hello"
-    },
-    {
-      "role": "assistant",
-      "content": "hello, sir. welcome to the conversation. what do you want now? 😒"
+      "content": "fuh yes, sir❤️‍🩹 don't lose it, blud🔋🌹"
     }
   ],
   "customNotes": []
