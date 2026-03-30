@@ -212,7 +212,7 @@ client.on("messageCreate", async (message) => {
     activeSpam.set(channelId, true);
     for (let i = 0; i < times; i++) {
       if (!activeSpam.get(channelId)) break;
-      try { await message.channel.send(spamText); } catch (_) {}
+      await send(message.channel, spamText);
       await sleep(300);
     }
     activeSpam.set(channelId, false);
@@ -257,7 +257,7 @@ client.on("messageCreate", async (message) => {
         ? `**${entry.authorDisplayName}**\ndel = ${entry.content}`
         : `**${entry.authorDisplayName}**\nedited: ${entry.content}\nnow: ${entry.newContent}`
     );
-    try { await message.channel.send(lines.join("\n\n")); } catch (_) {}
+    await send(message.channel, lines.join("\n\n"));
     return;
   }
 
@@ -268,16 +268,16 @@ client.on("messageCreate", async (message) => {
     const page = giphyMatch[2] ? parseInt(giphyMatch[2], 10) : 1;
     const result = await giphySearch(query, page);
     if (result.error === "no_key") {
-      try { await message.channel.send("no api giphy key"); } catch (_) {}
+      await send(message.channel, "no api giphy key");
       return;
     }
     if (result.error || result.gifs.length === 0) {
-      try { await message.channel.send(`no results for **${query}** you nigger`); } catch (_) {}
+      await send(message.channel, `no results for **${query}** you nigger`);
       return;
     }
     const header = `**giphy: "${query}"** — page ${result.page}/${result.totalPages} (${result.total} results)`;
     const urls = result.gifs.map((g) => g.url).join("\n");
-    try { await message.channel.send(`${header}\n${urls}`); } catch (_) {}
+    await send(message.channel, `${header}\n${urls}`);
     return;
   }
 
@@ -288,10 +288,10 @@ client.on("messageCreate", async (message) => {
     const url = ggifAddMatch[1];
     const result = store.addGif(userId, url);
     if (result.error === "max") {
-      try { await message.channel.send(`yoive hit the ${store.MAX_GIFS} gif limit greedy asshole`); } catch (_) {}
+      await send(message.channel, `yoive hit the ${store.MAX_GIFS} gif limit greedy asshole`);
       return;
     }
-    try { await message.channel.send(`saved — id: \`${result.id}\``); } catch (_) {}
+    await send(message.channel, `saved — id: \`${result.id}\``);
     return;
   }
 
@@ -300,10 +300,10 @@ client.on("messageCreate", async (message) => {
     const id = ggifRemoveMatch[1];
     const removed = store.removeGif(userId, id);
     if (!removed) {
-      try { await message.channel.send(`no gif with this id niga \`${id}\``); } catch (_) {}
+      await send(message.channel, `no gif with this id niga \`${id}\``);
       return;
     }
-    try { await message.channel.send(`removed \`${id}\``); } catch (_) {}
+    await send(message.channel, `removed \`${id}\``);
     return;
   }
 
@@ -313,14 +313,14 @@ client.on("messageCreate", async (message) => {
     const name = ggifNameMatch[2].trim();
     const result = store.nameGif(userId, id, name);
     if (result.error === "not_found") {
-      try { await message.channel.send(`no gif with ts id \`${id}\``); } catch (_) {}
+      await send(message.channel, `no gif with ts id \`${id}\``);
       return;
     }
     if (result.error === "name_taken") {
-      try { await message.channel.send(`you already HAVE a gif named **${name}** dumb figga`); } catch (_) {}
+      await send(message.channel, `you already HAVE a gif named **${name}** dumb figga`);
       return;
     }
-    try { await message.channel.send(`named \`${id}\` → **${name}**`); } catch (_) {}
+    await send(message.channel, `named \`${id}\` → **${name}**`);
     return;
   }
 
@@ -329,7 +329,7 @@ client.on("messageCreate", async (message) => {
     const page = ggifListMatch[1] ? parseInt(ggifListMatch[1], 10) : 1;
     const result = store.getGifPage(userId, page);
     if (result.total === 0) {
-      try { await message.channel.send("you have no saved gifs brochacho💔🫩🤞"); } catch (_) {}
+      await send(message.channel, "you have no saved gifs brochacho💔🫩🤞");
       return;
     }
     const lines = result.gifs.map((g) => {
@@ -337,7 +337,7 @@ client.on("messageCreate", async (message) => {
       return `\`${g.id}\` ${label} — ${g.url}`;
     });
     const header = `**your gifs**  page ${result.page}/${result.totalPages} (${result.total} total)`;
-    try { await message.channel.send(`${header}\n${lines.join("\n")}`); } catch (_) {}
+    await send(message.channel, `${header}\n${lines.join("\n")}`);
     return;
   }
 
@@ -351,11 +351,11 @@ client.on("messageCreate", async (message) => {
       gif = await fuzzyMatchGif(query, userGifs);
     }
     if (!gif) {
-      try { await message.channel.send("the actual fuck you mean"); } catch (_) {}
+      await send(message.channel, "the actual fuck you mean");
       return;
     }
     try { await message.delete(); } catch (_) {}
-    try { await message.channel.send(gif.url); } catch (_) {}
+    await send(message.channel, gif.url);
     return;
   }
 });
