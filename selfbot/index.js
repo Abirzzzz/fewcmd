@@ -111,6 +111,7 @@ client.on("messageReactionAdd", (reaction, user) => {
 });
 
 client.on("messageCreate", async (message) => {
+  if (client.user && message.author.id === client.user.id) return;
   if (!config.allowedUsers.includes(message.author.id)) return;
 
   const content = message.content.trim();
