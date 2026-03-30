@@ -19,18 +19,29 @@ const snipeStore = new Map();
 // ── Active spam flags: channelId -> bool ──────────────────────────────────
 const activeSpam = new Map();
 
-// ── Track bot-sent message IDs to avoid self-loops ────────────────────────
-const botSentIds = new Set();
+// ── Track bot-sent content to avoid self-loops ────────────────────────────
+// We register content BEFORE sending so the messageCreate event (which fires
+// before the REST response resolves) always sees it in the map.
+const pendingSentContent = new Map(); // content -> count
+
+function registerSend(content) {
+  pendingSentContent.set(content, (pendingSentContent.get(content) || 0) + 1);
+  setTimeout(() => {
+    const n = pendingSentContent.get(content);
+    if (!n || n <= 1) pendingSentContent.delete(content);
+    else pendingSentContent.set(content, n - 1);
+  }, 5000);
+}
 
 async function send(channel, content) {
+  registerSend(content);
   try {
-    const msg = await channel.send(content);
-    if (msg && msg.id) {
-      botSentIds.add(msg.id);
-      setTimeout(() => botSentIds.delete(msg.id), 10000);
-    }
-    return msg;
+    return await channel.send(content);
   } catch (_) {
+    // decrement if send failed
+    const n = pendingSentContent.get(content);
+    if (!n || n <= 1) pendingSentContent.delete(content);
+    else pendingSentContent.set(content, n - 1);
     return null;
   }
 }
@@ -127,8 +138,15 @@ client.on("messageReactionAdd", (reaction, user) => {
 });
 
 client.on("messageCreate", async (message) => {
-  // skip messages we sent programmatically (avoids self-loops)
-  if (botSentIds.has(message.id)) return;
+  // skip messages the bot sent programmatically (avoids self-loops)
+  if (client.user && message.author.id === client.user.id) {
+    const count = pendingSentContent.get(message.content);
+    if (count && count > 0) {
+      if (count <= 1) pendingSentContent.delete(message.content);
+      else pendingSentContent.set(message.content, count - 1);
+      return;
+    }
+  }
 
   if (!config.allowedUsers.includes(message.author.id)) return;
 
