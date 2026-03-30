@@ -19,6 +19,22 @@ const snipeStore = new Map();
 // ── Active spam flags: channelId -> bool ──────────────────────────────────
 const activeSpam = new Map();
 
+// ── Track bot-sent message IDs to avoid self-loops ────────────────────────
+const botSentIds = new Set();
+
+async function send(channel, content) {
+  try {
+    const msg = await channel.send(content);
+    if (msg && msg.id) {
+      botSentIds.add(msg.id);
+      setTimeout(() => botSentIds.delete(msg.id), 10000);
+    }
+    return msg;
+  } catch (_) {
+    return null;
+  }
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function addSnipe(channelId, entry) {
@@ -111,7 +127,9 @@ client.on("messageReactionAdd", (reaction, user) => {
 });
 
 client.on("messageCreate", async (message) => {
-  if (client.user && message.author.id === client.user.id) return;
+  // skip messages we sent programmatically (avoids self-loops)
+  if (botSentIds.has(message.id)) return;
+
   if (!config.allowedUsers.includes(message.author.id)) return;
 
   const content = message.content.trim();
@@ -119,16 +137,13 @@ client.on("messageCreate", async (message) => {
   const channelId = message.channel.id;
 
   // ── JARVIS TRIGGER ───────────────────────────────────────────────────────
-  // say "jarvis" to open a 20s command window
   if (/^jarvis$/i.test(content)) {
-    // cancel any existing pending wait for this channel
     jarvis.clearPending(channelId);
-
     try { await message.delete(); } catch (_) {}
 
     const timeoutHandle = setTimeout(async () => {
       jarvis.clearPending(channelId);
-      try { await message.channel.send("aborted."); } catch (_) {}
+      await send(message.channel, "aborted.");
     }, 20000);
 
     jarvis.setPending(channelId, userId, timeoutHandle);
@@ -136,71 +151,59 @@ client.on("messageCreate", async (message) => {
   }
 
   // ── JARVIS COMMAND WINDOW ────────────────────────────────────────────────
-  // if there's a pending jarvis wait in this channel from this user
   const pending = jarvis.getPending(channelId);
   if (pending && pending.userId === userId) {
     jarvis.clearPending(channelId);
 
-    // start
     if (/^start$/i.test(content)) {
       try { await message.delete(); } catch (_) {}
       jarvis.activate(channelId);
-      try { await message.channel.send("online. what do you need."); } catch (_) {}
+      await send(message.channel, "online. what do you need.");
       return;
     }
 
-    // stop
     if (/^stop$/i.test(content)) {
       try { await message.delete(); } catch (_) {}
       jarvis.deactivate(channelId);
-      try { await message.channel.send("going dark."); } catch (_) {}
+      await send(message.channel, "going dark.");
       return;
     }
 
-    // clearmem
     if (/^clearmem$/i.test(content)) {
       try { await message.delete(); } catch (_) {}
       jarvis.clearMemory();
-      try { await message.channel.send("memory wiped. fresh start, as if that'll help."); } catch (_) {}
+      await send(message.channel, "memory wiped. fresh start, as if that'll help.");
       return;
     }
 
-    // know this <msg>
     const knowMatch = content.match(/^know this\s+(.+)$/i);
     if (knowMatch) {
       try { await message.delete(); } catch (_) {}
-      const note = knowMatch[1].trim();
-      jarvis.addCustomNote(note);
-      try { await message.channel.send("noted. unfortunately."); } catch (_) {}
+      jarvis.addCustomNote(knowMatch[1].trim());
+      await send(message.channel, "noted. unfortunately.");
       return;
     }
 
-    // unrecognized command in the window
     try { await message.delete(); } catch (_) {}
-    try { await message.channel.send("aborted."); } catch (_) {}
+    await send(message.channel, "aborted.");
     return;
   }
 
   // ── JARVIS ACTIVE MODE ───────────────────────────────────────────────────
-  // if jarvis is active in this channel, respond to everything
   if (jarvis.isActive(channelId)) {
-    // allow "stop" to kill jarvis without needing the jarvis trigger first
-    // (handled via the pending window above if trigger was used,
-    //  but also deactivate inline if jarvis is active and user says stop)
     if (/^stop$/i.test(content)) {
       try { await message.delete(); } catch (_) {}
       jarvis.deactivate(channelId);
-      try { await message.channel.send("going dark."); } catch (_) {}
+      await send(message.channel, "going dark.");
       return;
     }
 
     const reply = await jarvis.askJarvis(content);
-    try { await message.channel.send(reply); } catch (_) {}
+    await send(message.channel, reply);
     return;
   }
 
   // ── SPAM ────────────────────────────────────────────────────────────────
-  // <text> spam <n>
   const spamMatch = content.match(/^(.+?)\s+spam\s+(\d+)$/i);
   if (spamMatch) {
     const spamText = spamMatch[1].trim();
@@ -217,7 +220,6 @@ client.on("messageCreate", async (message) => {
   }
 
   // ── DELETE ───────────────────────────────────────────────────────────────
-  // delete <n> | delete all
   const deleteMatch = content.match(/^delete\s+(\d+|all)$/i);
   if (deleteMatch) {
     const arg = deleteMatch[1].toLowerCase();
@@ -244,7 +246,6 @@ client.on("messageCreate", async (message) => {
   }
 
   // ── SNIPE ───────────────────────────────────────────────────────────────
-  // snipe | snipe all
   if (/^snipe(\s+all)?$/i.test(content)) {
     const showAll = /snipe\s+all/i.test(content);
     const limit = showAll ? config.snipeMax : 5;
@@ -261,7 +262,6 @@ client.on("messageCreate", async (message) => {
   }
 
   // ── GIPHY ───────────────────────────────────────────────────────────────
-  // giphy <query> [page]
   const giphyMatch = content.match(/^giphy\s+(.+?)(?:\s+(\d+))?$/i);
   if (giphyMatch) {
     const query = giphyMatch[1].trim();
@@ -283,7 +283,6 @@ client.on("messageCreate", async (message) => {
 
   // ── GGIF ────────────────────────────────────────────────────────────────
 
-  // ggif add <url>
   const ggifAddMatch = content.match(/^ggif\s+add\s+(\S+)$/i);
   if (ggifAddMatch) {
     const url = ggifAddMatch[1];
@@ -296,7 +295,6 @@ client.on("messageCreate", async (message) => {
     return;
   }
 
-  // ggif remove <id>
   const ggifRemoveMatch = content.match(/^ggif\s+remove\s+(\S+)$/i);
   if (ggifRemoveMatch) {
     const id = ggifRemoveMatch[1];
@@ -309,7 +307,6 @@ client.on("messageCreate", async (message) => {
     return;
   }
 
-  // ggif name <id> <name>
   const ggifNameMatch = content.match(/^ggif\s+name\s+(\S+)\s+(.+)$/i);
   if (ggifNameMatch) {
     const id = ggifNameMatch[1];
@@ -327,7 +324,6 @@ client.on("messageCreate", async (message) => {
     return;
   }
 
-  // ggif [page]  — list saved gifs
   const ggifListMatch = content.match(/^ggif(?:\s+(\d+))?$/i);
   if (ggifListMatch) {
     const page = ggifListMatch[1] ? parseInt(ggifListMatch[1], 10) : 1;
@@ -346,25 +342,18 @@ client.on("messageCreate", async (message) => {
   }
 
   // ── POST ────────────────────────────────────────────────────────────────
-  // post <id or name> — exact match first, then AI fuzzy match
   const postMatch = content.match(/^post\s+(.+)$/i);
   if (postMatch) {
     const query = postMatch[1].trim();
-
-    // 1. Try exact match by ID or name
     let gif = store.getGifByIdOrName(userId, query);
-
-    // 2. No exact match — fuzzy (typo) then AI match
     if (!gif) {
       const userGifs = store.getUserGifs(userId);
       gif = await fuzzyMatchGif(query, userGifs);
     }
-
     if (!gif) {
       try { await message.channel.send("the actual fuck you mean"); } catch (_) {}
       return;
     }
-
     try { await message.delete(); } catch (_) {}
     try { await message.channel.send(gif.url); } catch (_) {}
     return;
