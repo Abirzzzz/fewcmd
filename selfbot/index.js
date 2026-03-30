@@ -4,6 +4,7 @@ const { Client } = require("discord.js-selfbot-v13");
 const config = require("./config");
 const store = require("./store");
 const { fuzzyMatchGif } = require("./matcher");
+const jarvis = require("./jarvis");
 
 if (!config.token) {
   console.error("ERROR: DISCORD_TOKEN is not set. Add it to selfbot/.env");
@@ -114,6 +115,88 @@ client.on("messageCreate", async (message) => {
 
   const content = message.content.trim();
   const userId = message.author.id;
+  const channelId = message.channel.id;
+
+  // ── JARVIS TRIGGER ───────────────────────────────────────────────────────
+  // say "jarvis" to open a 20s command window
+  if (/^jarvis$/i.test(content)) {
+    // cancel any existing pending wait for this channel
+    jarvis.clearPending(channelId);
+
+    try { await message.delete(); } catch (_) {}
+
+    const timeoutHandle = setTimeout(async () => {
+      jarvis.clearPending(channelId);
+      try { await message.channel.send("aborted."); } catch (_) {}
+    }, 20000);
+
+    jarvis.setPending(channelId, userId, timeoutHandle);
+    return;
+  }
+
+  // ── JARVIS COMMAND WINDOW ────────────────────────────────────────────────
+  // if there's a pending jarvis wait in this channel from this user
+  const pending = jarvis.getPending(channelId);
+  if (pending && pending.userId === userId) {
+    jarvis.clearPending(channelId);
+
+    // start
+    if (/^start$/i.test(content)) {
+      try { await message.delete(); } catch (_) {}
+      jarvis.activate(channelId);
+      try { await message.channel.send("online. what do you need."); } catch (_) {}
+      return;
+    }
+
+    // stop
+    if (/^stop$/i.test(content)) {
+      try { await message.delete(); } catch (_) {}
+      jarvis.deactivate(channelId);
+      try { await message.channel.send("going dark."); } catch (_) {}
+      return;
+    }
+
+    // clearmem
+    if (/^clearmem$/i.test(content)) {
+      try { await message.delete(); } catch (_) {}
+      jarvis.clearMemory();
+      try { await message.channel.send("memory wiped. fresh start, as if that'll help."); } catch (_) {}
+      return;
+    }
+
+    // know this <msg>
+    const knowMatch = content.match(/^know this\s+(.+)$/i);
+    if (knowMatch) {
+      try { await message.delete(); } catch (_) {}
+      const note = knowMatch[1].trim();
+      jarvis.addCustomNote(note);
+      try { await message.channel.send("noted. unfortunately."); } catch (_) {}
+      return;
+    }
+
+    // unrecognized command in the window
+    try { await message.delete(); } catch (_) {}
+    try { await message.channel.send("aborted."); } catch (_) {}
+    return;
+  }
+
+  // ── JARVIS ACTIVE MODE ───────────────────────────────────────────────────
+  // if jarvis is active in this channel, respond to everything
+  if (jarvis.isActive(channelId)) {
+    // allow "stop" to kill jarvis without needing the jarvis trigger first
+    // (handled via the pending window above if trigger was used,
+    //  but also deactivate inline if jarvis is active and user says stop)
+    if (/^stop$/i.test(content)) {
+      try { await message.delete(); } catch (_) {}
+      jarvis.deactivate(channelId);
+      try { await message.channel.send("going dark."); } catch (_) {}
+      return;
+    }
+
+    const reply = await jarvis.askJarvis(content);
+    try { await message.channel.send(reply); } catch (_) {}
+    return;
+  }
 
   // ── SPAM ────────────────────────────────────────────────────────────────
   // <text> spam <n>
@@ -122,7 +205,6 @@ client.on("messageCreate", async (message) => {
     const spamText = spamMatch[1].trim();
     const times = Math.min(parseInt(spamMatch[2], 10), 200);
     if (times < 1) return;
-    const channelId = message.channel.id;
     activeSpam.set(channelId, true);
     for (let i = 0; i < times; i++) {
       if (!activeSpam.get(channelId)) break;
@@ -165,7 +247,7 @@ client.on("messageCreate", async (message) => {
   if (/^snipe(\s+all)?$/i.test(content)) {
     const showAll = /snipe\s+all/i.test(content);
     const limit = showAll ? config.snipeMax : 5;
-    const entries = snipeStore.get(message.channel.id) || [];
+    const entries = snipeStore.get(channelId) || [];
     const toShow = entries.slice(0, limit);
     if (toShow.length === 0) return;
     const lines = toShow.map((entry) =>
