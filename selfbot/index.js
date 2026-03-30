@@ -221,6 +221,17 @@ client.on("messageCreate", async (message) => {
     return;
   }
 
+  // ── PING ────────────────────────────────────────────────────────────────
+  if (/^ping$/i.test(content)) {
+    const start = Date.now();
+    const sent = await send(message.channel, "pinging...");
+    if (sent) {
+      const ms = Date.now() - start;
+      try { await sent.edit(`pong. **${ms}ms**`); } catch (_) {}
+    }
+    return;
+  }
+
   // ── SPAM ────────────────────────────────────────────────────────────────
   const spamMatch = content.match(/^(.+?)\s+spam\s+(\d+)$/i);
   if (spamMatch) {

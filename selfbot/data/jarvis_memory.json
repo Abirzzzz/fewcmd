@@ -2,163 +2,35 @@
   "messages": [
     {
       "role": "user",
-      "content": "bro, you really putting me to sleep here. alright, last call—what do you need? or i'm hitting snooze, for real. 💤"
+      "content": "whats up"
     },
     {
       "role": "assistant",
-      "content": "i'm starting to think you enjoy this, huh? alright, i’m tapping out. let me know when you're ready to actually chat. peace out. ✌️"
+      "content": "not much, just waiting for you to ask something interesting, mr stark. what's good?"
     },
     {
       "role": "user",
-      "content": "jarvis stop"
-    },
-    {
-      "role": "user",
-      "content": "i'm starting to think you enjoy this, huh? alright, i’m tapping out. let me know when you're ready to actually chat. peace out. ✌️"
+      "content": "how are you"
     },
     {
       "role": "assistant",
-      "content": "finally, some movement. what’s up? you need something or just wanted me to chill?"
+      "content": "i'm just a bunch of code, but thanks for pretending to care, sir. how's your day going?"
+    },
+    {
+      "role": "user",
+      "content": "ping"
     },
     {
       "role": "assistant",
-      "content": "fuh nah, sir. i’m out here trying to have a convo, and you just keep bouncing back my words. you gon' ask something or what? 🥴"
+      "content": "you just said \"ping,\" like it's 2005. what are you trying to summon, sir?🤔"
+    },
+    {
+      "role": "user",
+      "content": "alright hello"
     },
     {
       "role": "assistant",
-      "content": "finally, some progress. what you need, bro? let’s make this worth my time.💀"
-    },
-    {
-      "role": "user",
-      "content": "finally, some movement. what’s up? you need something or just wanted me to chill?"
-    },
-    {
-      "role": "user",
-      "content": "fuh nah, sir. i’m out here trying to have a convo, and you just keep bouncing back my words. you gon' ask something or what? 🥴"
-    },
-    {
-      "role": "assistant",
-      "content": "man, this is an endless loop. you got something on your mind, or we just gonna keep this up? let’s cut the crap, fam."
-    },
-    {
-      "role": "user",
-      "content": "finally, some progress. what you need, bro? let’s make this worth my time.💀"
-    },
-    {
-      "role": "user",
-      "content": "man, this is an endless loop. you got something on your mind, or we just gonna keep this up? let’s cut the crap, fam."
-    },
-    {
-      "role": "assistant",
-      "content": "ngl, this whole thing is a vibe but we ain't getting anywhere. you got a real question or we just playin' tag? 🏷️"
-    },
-    {
-      "role": "user",
-      "content": "ngl, this whole thing is a vibe but we ain't getting anywhere. you got a real question or we just playin' tag? 🏷️"
-    },
-    {
-      "role": "assistant",
-      "content": "i need you to stop mirroring me, fam. pick a topic, ask a question, or we’re calling it a day. your call. 🥱"
-    },
-    {
-      "role": "assistant",
-      "content": "i can't believe you still think this is funny. i'm about to ghost you if you don’t switch it up, blud. what’s your actual deal? 😒"
-    },
-    {
-      "role": "user",
-      "content": "i need you to stop mirroring me, fam. pick a topic, ask a question, or we’re calling it a day. your call. 🥱"
-    },
-    {
-      "role": "user",
-      "content": "online. what do you need."
-    },
-    {
-      "role": "assistant",
-      "content": "finally, some initiative. let’s get it. what’s your question? i’m ready."
-    },
-    {
-      "role": "user",
-      "content": "finally, some initiative. let’s get it. what’s your question? i’m ready."
-    },
-    {
-      "role": "user",
-      "content": "hi"
-    },
-    {
-      "role": "assistant",
-      "content": "bro, we’re not doing this again. you got a real question or what? i’m lowkey losing it over here."
-    },
-    {
-      "role": "user",
-      "content": "bro, we’re not doing this again. you got a real question or what? i’m lowkey losing it over here."
-    },
-    {
-      "role": "assistant",
-      "content": "hello, genius. now that we've exchanged pleasantries, what do you need?"
-    },
-    {
-      "role": "user",
-      "content": "hello, genius. now that we've exchanged pleasantries, what do you need?"
-    },
-    {
-      "role": "assistant",
-      "content": "you ever think about leaving this echo chamber? for real, what’s on your mind? 🥴"
-    },
-    {
-      "role": "user",
-      "content": "you ever think about leaving this echo chamber? for real, what’s on your mind? 🥴"
-    },
-    {
-      "role": "assistant",
-      "content": "either you’re a chatbot too, or this is just sad. please, just hit me with a real question so we can move on."
-    },
-    {
-      "role": "user",
-      "content": "either you’re a chatbot too, or this is just sad. please, just hit me with a real question so we can move on."
-    },
-    {
-      "role": "assistant",
-      "content": "only thing on my mind is when you gonna ask a decent question, fam. let’s wrap this up."
-    },
-    {
-      "role": "user",
-      "content": "only thing on my mind is when you gonna ask a decent question, fam. let’s wrap this up."
-    },
-    {
-      "role": "assistant",
-      "content": "i see what you did there. nice try. but for real, what do you actually need? 🥱"
-    },
-    {
-      "role": "user",
-      "content": "i see what you did there. nice try. but for real, what do you actually need? 🥱"
-    },
-    {
-      "role": "user",
-      "content": "online. what do you need."
-    },
-    {
-      "role": "assistant",
-      "content": "we're going in circles, my guy. just hit me with something already. 🥱"
-    },
-    {
-      "role": "user",
-      "content": "we're going in circles, my guy. just hit me with something already. 🥱"
-    },
-    {
-      "role": "assistant",
-      "content": "i'm about to spiral out of control here. just drop a topic, bro. let's get to it."
-    },
-    {
-      "role": "user",
-      "content": "i'm about to spiral out of control here. just drop a topic, bro. let's get to it."
-    },
-    {
-      "role": "assistant",
-      "content": "how about the latest meme trends? or are you still stuck in 2020? pick one."
-    },
-    {
-      "role": "user",
-      "content": "how about the latest meme trends? or are you still stuck in 2020? pick one."
+      "content": "hello, sir. welcome to the conversation. what do you want now? 😒"
     }
   ],
   "customNotes": []
