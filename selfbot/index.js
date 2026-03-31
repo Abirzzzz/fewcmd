@@ -169,7 +169,7 @@ client.on("messageCreate", async (message) => {
             aSession.awaitingAnswer = true;
             const q = aSession.game.question;
             const prog = Math.round(aSession.game.progress);
-            await send(message.channel, `**Q${aSession.game.currentStep + 1}** (${prog}%) — ${q}\n> yes · no · idk · prob · probn`);
+            await send(message.channel, `**Q${aSession.game.currentStep + 1}** (${prog}%) ${q}\n> yes · no · idk · prob · probn`);
           }
         } catch {
           await send(message.channel, "akinator fucking errored, so like the game aslo ended");
