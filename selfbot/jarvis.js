@@ -129,7 +129,7 @@ and also use emojis like 💔🥀🫩🤞 not every time, and not all. like a fe
 
 async function askJarvis(userMessage) {
   const cfg = getOpenRouterConfig();
-  if (!cfg) return "no openrouter key configured. can't do anything about that.";
+  if (!cfg) return "no key dniga";
 
   const mem = loadMemory();
   const systemPrompt = buildSystemPrompt(mem.customNotes);
@@ -160,7 +160,7 @@ async function askJarvis(userMessage) {
     pushMessage("assistant", reply);
     return reply;
   } catch (e) {
-    return "something broke. tuff icl.";
+    return "something broke";
   }
 }
 
