@@ -5,6 +5,7 @@ const config = require("./config");
 const store = require("./store");
 const { fuzzyMatchGif } = require("./matcher");
 const jarvis = require("./jarvis");
+const aki = require("./aki");
 
 if (!config.token) {
   console.error("ERROR: DISCORD_TOKEN is not set. Add it to selfbot/.env");
@@ -148,6 +149,39 @@ client.on("messageCreate", async (message) => {
     }
   }
 
+  // ── AKI ANSWER INTERCEPT (runs before allowedUsers check) ────────────────
+  {
+    const aSession = aki.getSession(message.channel.id);
+    if (aSession && message.author.id === aSession.targetUserId && aSession.awaitingAnswer) {
+      const answerIdx = aki.parseAnswer(message.content.trim());
+      if (answerIdx !== null) {
+        aSession.awaitingAnswer = false;
+        try {
+          const result = await aSession.game.step(answerIdx);
+          if (result && result.id_base_proposition) {
+            const { name, desc, img } = aki.formatGuess(result);
+            const lines = [`I'm thinking of... **${name}**`];
+            if (desc) lines.push(desc);
+            if (img) lines.push(img);
+            await send(message.channel, lines.join("\n"));
+            aki.clearSession(message.channel.id);
+          } else {
+            aSession.awaitingAnswer = true;
+            const q = aSession.game.question;
+            const prog = Math.round(aSession.game.progress);
+            await send(message.channel, `**Q${aSession.game.currentStep + 1}** (${prog}%) — ${q}\n> yes · no · idk · prob · probn`);
+          }
+        } catch {
+          await send(message.channel, "akinator error, game ended.");
+          aki.clearSession(message.channel.id);
+        }
+        return;
+      }
+      // if not a valid answer and they are NOT the host, block command processing
+      if (aSession.targetUserId !== aSession.hostUserId) return;
+    }
+  }
+
   if (!config.allowedUsers.includes(message.author.id)) return;
 
   const content = message.content.trim();
@@ -157,11 +191,60 @@ client.on("messageCreate", async (message) => {
   // ── PING ────────────────────────────────────────────────────────────────
   if (/^ping$/i.test(content)) {
     const start = Date.now();
-    const sent = await send(message.channel, "pinging...");
+    const sent = await send(message.channel, "one sec joe");
     if (sent) {
       const ms = Date.now() - start;
-      try { await sent.edit(`pong. **${ms}ms**`); } catch (_) {}
+      try { await sent.edit(`boobie **${ms}ms**`); } catch (_) {}
     }
+    return;
+  }
+
+  // ── AKIRESET ─────────────────────────────────────────────────────────────
+  const akireset = content.match(/^akireset\s+(\d+)$/i);
+  if (akireset) {
+    const targetId = akireset[1];
+    aki.resetUser(targetId);
+    await send(message.channel, `reset aki uses for <@${targetId}>.`);
+    return;
+  }
+
+  // ── AKI ──────────────────────────────────────────────────────────────────
+  const akiMatch = content.match(/^aki(?:\s+(\d+))?$/i);
+  if (akiMatch) {
+    const targetUserId = akiMatch[1] || userId;
+
+    if (aki.getSession(channelId)) {
+      await send(message.channel, "there's already an active aki game in this channel.");
+      return;
+    }
+
+    if (!aki.canUse(targetUserId)) {
+      await send(message.channel, `<@${targetUserId}> has used all ${aki.MAX_USES} aki plays for today. use \`akireset ${targetUserId}\` to reset.`);
+      return;
+    }
+
+    aki.recordUse(targetUserId);
+    const remaining = aki.getRemainingUses(targetUserId);
+
+    const starting = await send(message.channel, "starting akinator...");
+
+    let session;
+    try {
+      session = await aki.startSession(channelId, userId, targetUserId);
+    } catch {
+      await send(message.channel, "couldn't connect to akinator. try again later.");
+      if (starting) try { await starting.delete(); } catch (_) {}
+      return;
+    }
+
+    if (starting) try { await starting.delete(); } catch (_) {}
+
+    const who = targetUserId === userId ? "you" : `<@${targetUserId}>`;
+    const q = session.game.question;
+    await send(
+      message.channel,
+      `akinator — ${who} is playing. **${remaining}** uses left today.\nanswer: yes · no · idk · prob · probn\n\n**Q1** — ${q}`
+    );
     return;
   }
 

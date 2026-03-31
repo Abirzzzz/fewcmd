@@ -8,9 +8,11 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "aki-api": "^7.0.1",
     "debug": "^4.4.3",
     "discord.js-selfbot-v13": "^3.4.1",
     "dotenv": "^17.3.1",
+    "node_extra_ca_certs_mozilla_bundle": "^1.0.7",
     "node-fetch": "^3.3.2",
     "ws": "^8.20.0"
   }
