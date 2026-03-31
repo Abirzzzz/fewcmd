@@ -160,7 +160,7 @@ client.on("messageCreate", async (message) => {
           const result = await aSession.game.step(answerIdx);
           if (result && result.id_base_proposition) {
             const { name, desc, img } = aki.formatGuess(result);
-            const lines = [`I'm thinking of... **${name}**`];
+            const lines = [`imm thinking of **${name}**`];
             if (desc) lines.push(desc);
             if (img) lines.push(img);
             await send(message.channel, lines.join("\n"));
@@ -172,7 +172,7 @@ client.on("messageCreate", async (message) => {
             await send(message.channel, `**Q${aSession.game.currentStep + 1}** (${prog}%) — ${q}\n> yes · no · idk · prob · probn`);
           }
         } catch {
-          await send(message.channel, "akinator error, game ended.");
+          await send(message.channel, "akinator fucking errored, so like the game aslo ended");
           aki.clearSession(message.channel.id);
         }
         return;
@@ -214,25 +214,25 @@ client.on("messageCreate", async (message) => {
     const targetUserId = akiMatch[1] || userId;
 
     if (aki.getSession(channelId)) {
-      await send(message.channel, "there's already an active aki game in this channel.");
+      await send(message.channel, "game running alr");
       return;
     }
 
     if (!aki.canUse(targetUserId)) {
-      await send(message.channel, `<@${targetUserId}> has used all ${aki.MAX_USES} aki plays for today. use \`akireset ${targetUserId}\` to reset.`);
+      await send(message.channel, `used all aki 5/5`);
       return;
     }
 
     aki.recordUse(targetUserId);
     const remaining = aki.getRemainingUses(targetUserId);
 
-    const starting = await send(message.channel, "starting akinator...");
+    const starting = await send(message.channel, "starting akinator rn");
 
     let session;
     try {
       session = await aki.startSession(channelId, userId, targetUserId);
     } catch {
-      await send(message.channel, "couldn't connect to akinator. try again later.");
+      await send(message.channel, "cant fcking connect to aki");
       if (starting) try { await starting.delete(); } catch (_) {}
       return;
     }
@@ -243,7 +243,7 @@ client.on("messageCreate", async (message) => {
     const q = session.game.question;
     await send(
       message.channel,
-      `akinator — ${who} is playing. **${remaining}** uses left today.\nanswer: yes · no · idk · prob · probn\n\n**Q1** — ${q}`
+      `ts nga > ${who} is playing **${remaining}** uses left today\nanswer with ts ONLY: yes · no · idk · prob · probn\n\n**Q1** — ${q}`
     );
     return;
   }
@@ -255,7 +255,7 @@ client.on("messageCreate", async (message) => {
 
     const timeoutHandle = setTimeout(async () => {
       jarvis.clearPending(channelId);
-      await send(message.channel, "aborted.");
+      await send(message.channel, "aborted nga");
     }, 20000);
 
     jarvis.setPending(channelId, userId, timeoutHandle);
@@ -284,7 +284,7 @@ client.on("messageCreate", async (message) => {
     if (/^clearmem$/i.test(content)) {
       try { await message.delete(); } catch (_) {}
       jarvis.clearMemory();
-      await send(message.channel, "memory wiped. fresh start, as if that'll help.");
+      await send(message.channel, "sum peter parker shi cz memory wiped");
       return;
     }
 
@@ -292,7 +292,7 @@ client.on("messageCreate", async (message) => {
     if (knowMatch) {
       try { await message.delete(); } catch (_) {}
       jarvis.addCustomNote(knowMatch[1].trim());
-      await send(message.channel, "noted. unfortunately.");
+      await send(message.channel, "noted ts(might be peak)");
       return;
     }
 
@@ -387,7 +387,7 @@ client.on("messageCreate", async (message) => {
       await send(message.channel, `no results for **${query}** you nigger`);
       return;
     }
-    const header = `**giphy: "${query}"** — page ${result.page}/${result.totalPages} (${result.total} results)`;
+    const header = `**giphy: "${query}"**  page ${result.page}/${result.totalPages} (${result.total} results)`;
     const urls = result.gifs.map((g) => g.url).join("\n");
     await send(message.channel, `${header}\n${urls}`);
     return;
@@ -403,7 +403,7 @@ client.on("messageCreate", async (message) => {
       await send(message.channel, `yoive hit the ${store.MAX_GIFS} gif limit greedy asshole`);
       return;
     }
-    await send(message.channel, `saved — id: \`${result.id}\``);
+    await send(message.channel, `saved with tss id: \`${result.id}\``);
     return;
   }
 
