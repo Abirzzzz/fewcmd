@@ -243,7 +243,7 @@ client.on("messageCreate", async (message) => {
     const q = session.game.question;
     await send(
       message.channel,
-      `ts nga > ${who} is playing **${remaining}** uses left today\nanswer with ts ONLY: yes · no · idk · prob · probn\n\n**Q1** — ${q}`
+      `ts nga > ${who} is playing **${remaining}** uses left today\nanswer with ts ONLY: yes · no · idk · prob · probn\n\n**Q1** ${q}`
     );
     return;
   }
