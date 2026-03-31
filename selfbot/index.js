@@ -219,7 +219,7 @@ client.on("messageCreate", async (message) => {
     }
 
     if (!aki.canUse(targetUserId)) {
-      await send(message.channel, `used all aki 5/5`);
+      await send(message.channel, `u used all aki 5/5 greedy fuck`);
       return;
     }
 
