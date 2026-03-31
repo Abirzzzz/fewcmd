@@ -446,7 +446,7 @@ client.on("messageCreate", async (message) => {
     }
     const lines = result.gifs.map((g) => {
       const label = g.name ? `**${g.name}**` : "unnamed";
-      return `\`${g.id}\` ${label} — ${g.url}`;
+      return `\`${g.id}\` ${label}  ${g.url}`;
     });
     const header = `**your gifs**  page ${result.page}/${result.totalPages} (${result.total} total)`;
     await send(message.channel, `${header}\n${lines.join("\n")}`);
